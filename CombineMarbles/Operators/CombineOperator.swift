@@ -24,6 +24,21 @@ struct OperatorDefinition: Identifiable {
     let description: String
     let codeExample: String
     let apply: ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>
+    let inputStrategy: InputGenerationStrategy
+    
+    init(name: String,
+         category: OperatorCategory,
+         description: String,
+         codeExample: String,
+         apply: @escaping ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>,
+         inputStrategy: InputGenerationStrategy = .random) {
+        self.name = name
+        self.category = category
+        self.description = description
+        self.codeExample = codeExample
+        self.apply = apply
+        self.inputStrategy = inputStrategy
+    }
 }
 
 class OperatorLibrary {
@@ -45,7 +60,6 @@ class OperatorLibrary {
                 
                 return publisher
                     .map { value in
-                        // Implementazione della trasformazione (es. raddoppia numeri interi)
                         if let intValue = value as? Int {
                             return intValue * 2 as Any
                         }
