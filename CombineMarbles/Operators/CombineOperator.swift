@@ -69,6 +69,36 @@ class OperatorLibrary {
             }
         ),
         
+        OperatorDefinition(
+            name: "compactMap",
+            category: .transforming,
+            description: "Transforms all elements from the upstream publisher with a provided closure and publishes only non-nil results.",
+            codeExample: """
+            publisherA
+                .compactMap { value in
+                    value > 50 ? value : nil
+                }
+            """,
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .compactMap { value -> Any? in
+                        if let strValue = value as? String, strValue == "nil" {
+                            return nil
+                        }
+                        
+                        if let intValue = value as? Int {
+                            return intValue > 50 ? intValue : nil
+                        }
+                        return value
+                    }
+                    .eraseToAnyPublisher()
+            },
+            inputStrategy: .optionals
+        )
         // TODO: Aggiungere altri operatori qui
     ]
 }
