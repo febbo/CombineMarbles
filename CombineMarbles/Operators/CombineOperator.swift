@@ -24,6 +24,21 @@ struct OperatorDefinition: Identifiable {
     let description: String
     let codeExample: String
     let apply: ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>
+    let inputStrategy: InputGenerationStrategy
+    
+    init(name: String,
+         category: OperatorCategory,
+         description: String,
+         codeExample: String,
+         apply: @escaping ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>,
+         inputStrategy: InputGenerationStrategy = .random) {
+        self.name = name
+        self.category = category
+        self.description = description
+        self.codeExample = codeExample
+        self.apply = apply
+        self.inputStrategy = inputStrategy
+    }
 }
 
 class OperatorLibrary {
@@ -45,7 +60,6 @@ class OperatorLibrary {
                 
                 return publisher
                     .map { value in
-                        // Implementazione della trasformazione (es. raddoppia numeri interi)
                         if let intValue = value as? Int {
                             return intValue * 2 as Any
                         }
@@ -55,6 +69,36 @@ class OperatorLibrary {
             }
         ),
         
+        OperatorDefinition(
+            name: "compactMap",
+            category: .transforming,
+            description: "Transforms all elements from the upstream publisher with a provided closure and publishes only non-nil results.",
+            codeExample: """
+            publisherA
+                .compactMap { value in
+                    value > 50 ? value : nil
+                }
+            """,
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .compactMap { value -> Any? in
+                        if let strValue = value as? String, strValue == "nil" {
+                            return nil
+                        }
+                        
+                        if let intValue = value as? Int {
+                            return intValue > 50 ? intValue : nil
+                        }
+                        return value
+                    }
+                    .eraseToAnyPublisher()
+            },
+            inputStrategy: .optionals
+        )
         // TODO: Aggiungere altri operatori qui
     ]
 }

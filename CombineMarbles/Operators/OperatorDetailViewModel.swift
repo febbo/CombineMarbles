@@ -21,16 +21,16 @@ class OperatorDetailViewModel: ObservableObject {
         
         cancellables.removeAll()
         
-        inputStream.generateRandomEvents(count: 5)
+        `operator`.inputStrategy.apply(to: inputStream)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self = self else { return }
             
-            // Applica l'operatore
+            // Apply operator
             let inputPublisher = self.inputStream.asPublisher()
             let outputPublisher = `operator`.apply([inputPublisher])
             
-            // Registra gli eventi di output
+            // Output values
             outputPublisher
                 .receive(on: RunLoop.main)
                 .sink(

@@ -62,6 +62,11 @@ struct OperatorDetailView: View {
             .padding()
         }
         .navigationTitle(`operator`.name)
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                viewModel.runExample(with: `operator`)
+            }
+        }
     }
 }
 
