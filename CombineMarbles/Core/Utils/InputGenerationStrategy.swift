@@ -11,6 +11,7 @@ import Combine
 enum InputGenerationStrategy {
     case random                  // Input random standard
     case optionals               // Input random with nil values
+    case delayed                 // Delayed Inputs
     case custom((MarbleStreamViewModel) -> Void)  // Personalized input strategy
     
     func apply(to streamViewModel: MarbleStreamViewModel) {
@@ -45,6 +46,22 @@ enum InputGenerationStrategy {
             
         case .custom(let generator):
             generator(streamViewModel)
+        case .delayed:
+            // Implementazione per eventi ritardati utili per operatori di timing
+            streamViewModel.reset()
+            let timelineDuration = streamViewModel.timelineDuration
+            
+            // Genera eventi con spaziatura non uniforme
+            let times: [Double] = [0.2, 0.3, 0.6, 0.9]
+            
+            for (i, time) in times.enumerated() {
+                streamViewModel.setCurrentTime(time * timelineDuration)
+                let value = (i + 1) * 10
+                streamViewModel.addEvent(.next(value))
+            }
+            
+            streamViewModel.setCurrentTime(timelineDuration * 0.95)
+            streamViewModel.addEvent(.completed)
         }
     }
 }
