@@ -9,28 +9,31 @@ import SwiftUI
 import Combine
 
 class OperatorDetailViewModel: ObservableObject {
-    @Published var inputStream = MarbleStreamViewModel(title: "Input")
+    @Published var inputStreams: [MarbleStreamViewModel] = []
     @Published var outputStream = MarbleStreamViewModel(title: "Output")
     
     private var cancellables = Set<AnyCancellable>()
     
     func runExample(with operator: OperatorDefinition) {
-
-        inputStream.reset()
+        setupInputStreams(for: `operator`)
         outputStream.reset()
-        
         cancellables.removeAll()
         
-        `operator`.inputStrategy.apply(to: inputStream)
+        for (index, inputStream) in inputStreams.enumerated() {
+            if index < `operator`.inputStrategies.count {
+                `operator`.inputStrategies[index].apply(to: inputStream)
+            }
+        }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self = self else { return }
             
-            // Apply operator
-            let inputPublisher = self.inputStream.asPublisher()
-            let outputPublisher = `operator`.apply([inputPublisher])
+            // Convert all input streams into publishers
+            let inputPublishers = self.inputStreams.map { $0.asPublisher() }
             
-            // Output values
+            // Applies the operator to all input publishers
+            let outputPublisher = `operator`.apply(inputPublishers)
+            
             outputPublisher
                 .receive(on: RunLoop.main)
                 .sink(
@@ -56,6 +59,22 @@ class OperatorDetailViewModel: ObservableObject {
                     }
                 )
                 .store(in: &self.cancellables)
+        }
+    }
+    
+    // Method for configuring input streams based on the operator
+    private func setupInputStreams(for operator: OperatorDefinition) {
+        
+        inputStreams.removeAll()
+        
+        for (index, _) in `operator`.inputStrategies.enumerated() {
+            let streamTitle = inputStreams.isEmpty ? "Input" : "Input \(index + 1)"
+            let inputStream = MarbleStreamViewModel(title: streamTitle)
+            inputStreams.append(inputStream)
+        }
+        
+        if inputStreams.isEmpty {
+            inputStreams.append(MarbleStreamViewModel(title: "Input"))
         }
     }
 }
