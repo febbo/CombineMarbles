@@ -1,0 +1,5 @@
+// Release.xcconfig
+// Settings for Release configuration
+
+// Include Base configuration
+#include "Base.xcconfig"

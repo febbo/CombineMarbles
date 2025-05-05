@@ -1,0 +1,13 @@
+// Base.xcconfig
+
+// Includes developer-specific settings if exist
+#include? "DeveloperSettings.xcconfig"
+
+// Project Identification
+PROJECT_NAME = CombineMarbles
+PRODUCT_BUNDLE_IDENTIFIER = $(DEVELOPER_BUNDLE_PREFIX).$(PROJECT_NAME)
+
+// Target iOS 
+IPHONEOS_DEPLOYMENT_TARGET = 16.0
+
+CODE_SIGN_STYLE = Automatic
