@@ -1,0 +1,5 @@
+// DeveloperSettings.xcconfig.template
+// Copy this file in DeveloperSettings.xcconfig and configure it 
+
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+DEVELOPER_BUNDLE_PREFIX = com.example

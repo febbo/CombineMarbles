@@ -23,29 +23,37 @@ struct OperatorDefinition: Identifiable {
     let category: OperatorCategory
     let description: String
     let codeExample: String
+    let inputStrategies: [InputGenerationStrategy]
     let apply: ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>
-    let inputStrategy: InputGenerationStrategy
     
     init(name: String,
          category: OperatorCategory,
          description: String,
          codeExample: String,
-         apply: @escaping ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>,
-         inputStrategy: InputGenerationStrategy = .random) {
+         inputStrategies: [InputGenerationStrategy] = [.random],
+         apply: @escaping ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>) {
         self.name = name
         self.category = category
         self.description = description
         self.codeExample = codeExample
+        self.inputStrategies = inputStrategies
         self.apply = apply
-        self.inputStrategy = inputStrategy
     }
 }
 
 class OperatorLibrary {
     static let shared = OperatorLibrary()
     
-    let operators: [OperatorDefinition] = [
-        OperatorDefinition(
+    var operators: [OperatorDefinition] {
+        return [
+            createMapOperator(),
+            createCompactMapOperator(),
+            // TODO: Add new operators here
+        ]
+    }
+    
+    private func createMapOperator() -> OperatorDefinition {
+        return OperatorDefinition(
             name: "map",
             category: .transforming,
             description: "Transforms elements from the upstream publisher by applying a closure to each element.",
@@ -67,9 +75,11 @@ class OperatorLibrary {
                     }
                     .eraseToAnyPublisher()
             }
-        ),
-        
-        OperatorDefinition(
+        )
+    }
+    
+    private func createCompactMapOperator() -> OperatorDefinition {
+        return OperatorDefinition(
             name: "compactMap",
             category: .transforming,
             description: "Transforms all elements from the upstream publisher with a provided closure and publishes only non-nil results.",
@@ -79,6 +89,7 @@ class OperatorLibrary {
                     value > 50 ? value : nil
                 }
             """,
+            inputStrategies: [.optionals],
             apply: { publishers in
                 guard let publisher = publishers.first else {
                     return Empty().eraseToAnyPublisher()
@@ -96,9 +107,8 @@ class OperatorLibrary {
                         return value
                     }
                     .eraseToAnyPublisher()
-            },
-            inputStrategy: .optionals
+            }
+            
         )
-        // TODO: Aggiungere altri operatori qui
-    ]
+    }
 }

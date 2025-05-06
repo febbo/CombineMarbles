@@ -25,8 +25,9 @@ struct OperatorDetailView: View {
                     Text("Visualization")
                         .font(.headline)
                     
-                    // Input Stream
-                    MarbleStreamView(viewModel: viewModel.inputStream)
+                    ForEach(viewModel.inputStreams.indices, id: \.self) { index in
+                        MarbleStreamView(viewModel: viewModel.inputStreams[index])
+                    }
                     
                     // Operator indicator
                     HStack {
@@ -69,5 +70,6 @@ struct OperatorDetailView: View {
         }
     }
 }
+
 
 

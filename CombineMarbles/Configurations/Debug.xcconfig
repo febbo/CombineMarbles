@@ -1,0 +1,5 @@
+// Debug.xcconfig
+// Settings for Debug configuration
+
+// Include Base configuration
+#include "Base.xcconfig"
