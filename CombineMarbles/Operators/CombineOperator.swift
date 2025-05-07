@@ -48,6 +48,7 @@ class OperatorLibrary {
         return [
             createMapOperator(),
             createCompactMapOperator(),
+            createMergeOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -109,6 +110,31 @@ class OperatorLibrary {
                     .eraseToAnyPublisher()
             }
             
+        )
+    }
+    
+    private func createMergeOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "merge",
+            category: .combining,
+            description: "Combines elements from multiple publishers of the same type, delivering an interleaved sequence of elements.",
+            codeExample: """
+            publisherA
+                .merge(with: publisherB)
+            """,
+            inputStrategies: [.random, .delayed],
+            apply: { publishers in
+                guard publishers.count >= 2 else {
+                    return publishers.first ?? Empty().eraseToAnyPublisher()
+                }
+                
+                let firstPublisher = publishers[0]
+                let secondPublisher = publishers[1]
+                
+                return firstPublisher
+                    .merge(with: secondPublisher)
+                    .eraseToAnyPublisher()
+            }
         )
     }
 }
