@@ -49,6 +49,7 @@ class OperatorLibrary {
             createMapOperator(),
             createCompactMapOperator(),
             createMergeOperator(),
+            createCombineLatestOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -133,6 +134,38 @@ class OperatorLibrary {
                 
                 return firstPublisher
                     .merge(with: secondPublisher)
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+    
+    private func createCombineLatestOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "combineLatest",
+            category: .combining,
+            description: "Combines the latest values from multiple publishers, emitting a tuple of values whenever any of the publishers emits a new value.",
+            codeExample: """
+            publisherA.combineLatest(publisherB)
+                .map { valueA, valueB in
+                    return valueA + valueB
+                }
+            """,
+            inputStrategies: [.random, .delayed],
+            apply: { publishers in
+                guard publishers.count >= 2 else {
+                    return publishers.first ?? Empty().eraseToAnyPublisher()
+                }
+                
+                let firstPublisher = publishers[0]
+                let secondPublisher = publishers[1]
+                
+                return firstPublisher.combineLatest(secondPublisher)
+                    .map { (a, b) -> Any in
+                        if let intA = a as? Int, let intB = b as? Int {
+                            return intA + intB
+                        }
+                        return "\(a),\(b)"
+                    }
                     .eraseToAnyPublisher()
             }
         )
