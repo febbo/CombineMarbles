@@ -50,6 +50,7 @@ class OperatorLibrary {
             createCompactMapOperator(),
             createMergeOperator(),
             createCombineLatestOperator(),
+            createZipOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -165,6 +166,38 @@ class OperatorLibrary {
                             return intA + intB
                         }
                         return "\(a),\(b)"
+                    }
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+    
+    private func createZipOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "zip",
+            category: .combining,
+            description: "Combines elements from multiple publishers, emitting a tuple of values only when all publishers have emitted a new value.",
+            codeExample: """
+            publisherA.zip(publisherB)
+                .map { valueA, valueB in
+                    return "valueA - valueB"
+                }
+            """,
+            inputStrategies: [.random, .delayed],
+            apply: { publishers in
+                guard publishers.count >= 2 else {
+                    return publishers.first ?? Empty().eraseToAnyPublisher()
+                }
+                
+                let firstPublisher = publishers[0]
+                let secondPublisher = publishers[1]
+                
+                return firstPublisher.zip(secondPublisher)
+                    .map { (a, b) -> Any in
+                        if let intA = a as? Int, let intB = b as? Int {
+                            return "\(intA)-\(intB)"
+                        }
+                        return "\(a)-\(b)"
                     }
                     .eraseToAnyPublisher()
             }
