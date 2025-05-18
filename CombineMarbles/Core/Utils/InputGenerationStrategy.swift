@@ -65,3 +65,26 @@ enum InputGenerationStrategy {
         }
     }
 }
+// extension of InputGenerationStrategy to handle better filtering cases
+extension InputGenerationStrategy {
+    
+    static func filterDemonstration() -> InputGenerationStrategy {
+        return .custom { streamViewModel in
+            streamViewModel.reset()
+            let timelineDuration = streamViewModel.timelineDuration
+            
+            let values = [30, 40, 60, 20, 70, 45, 55, 80, 25]
+            let count = values.count
+            let interval = (timelineDuration * 0.8) / Double(count)
+            
+            for (i, value) in values.enumerated() {
+                let time = Double(i) * interval + 0.5
+                streamViewModel.setCurrentTime(time)
+                streamViewModel.addEvent(.next(value))
+            }
+            
+            streamViewModel.setCurrentTime(timelineDuration * 0.9)
+            streamViewModel.addEvent(.completed)
+        }
+    }
+}

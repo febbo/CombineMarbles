@@ -51,6 +51,7 @@ class OperatorLibrary {
             createMergeOperator(),
             createCombineLatestOperator(),
             createZipOperator(),
+            createFilterOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -198,6 +199,34 @@ class OperatorLibrary {
                             return "\(intA)-\(intB)"
                         }
                         return "\(a)-\(b)"
+                    }
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+        
+    func createFilterOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "filter",
+            category: .filtering,
+            description: "Publishes only elements from an upstream publisher that satisfy a provided predicate.",
+            codeExample: """
+            publisherA
+                .filter { $0 > 50 }
+            """,
+            inputStrategies: [.filterDemonstration()],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .filter { value in
+                        // Filtra solo valori superiori a 50
+                        if let intValue = value as? Int {
+                            return intValue > 50
+                        }
+                        return false
                     }
                     .eraseToAnyPublisher()
             }
