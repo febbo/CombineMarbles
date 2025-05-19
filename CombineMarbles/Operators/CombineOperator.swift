@@ -52,6 +52,7 @@ class OperatorLibrary {
             createCombineLatestOperator(),
             createZipOperator(),
             createFilterOperator(),
+            createPrefixOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -228,6 +229,27 @@ class OperatorLibrary {
                         }
                         return false
                     }
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+    func createPrefixOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "prefix(_:)",
+            category: .filtering,
+            description: "Republishes elements up to the specified maximum count, then finishes.",
+            codeExample: """
+            publisherA
+                .prefix(3)
+            """,
+            inputStrategies: [.prefixDropDemonstration()],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .prefix(3)
                     .eraseToAnyPublisher()
             }
         )
