@@ -52,6 +52,7 @@ class OperatorLibrary {
             createCombineLatestOperator(),
             createZipOperator(),
             createFilterOperator(),
+            createFilterWhereOperator(),
             createPrefixOperator(),
             // TODO: Add new operators here
         ]
@@ -250,6 +251,49 @@ class OperatorLibrary {
                 
                 return publisher
                     .prefix(3)
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+    //advanced filter
+    func createFilterWhereOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "filter(isMultipleOf:)",
+            category: .filtering,
+            description: "A variant of filter that shows how to filter elements based on a specific condition - in this case numbers that are multiples of 3.",
+            codeExample: """
+            publisherA
+                .filter { $0.isMultiple(of: 3) }
+            """,
+            inputStrategies: [.custom { streamViewModel in
+                streamViewModel.reset()
+                let timelineDuration = streamViewModel.timelineDuration
+                
+                let values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                let count = values.count
+                let interval = (timelineDuration * 0.8) / Double(count)
+                
+                for (i, value) in values.enumerated() {
+                    let time = Double(i) * interval + 0.5
+                    streamViewModel.setCurrentTime(time)
+                    streamViewModel.addEvent(.next(value))
+                }
+                
+                streamViewModel.setCurrentTime(timelineDuration * 0.9)
+                streamViewModel.addEvent(.completed)
+            }],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .filter { value in
+                        if let intValue = value as? Int {
+                            return intValue.isMultiple(of: 3)
+                        }
+                        return false
+                    }
                     .eraseToAnyPublisher()
             }
         )
