@@ -55,6 +55,7 @@ class OperatorLibrary {
             createFilterWhereOperator(),
             createRemoveDuplicatesOperator(),
             createPrefixOperator(),
+            createDropWhileOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -341,6 +342,33 @@ class OperatorLibrary {
                         }
                         return false
                     }
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+    
+    func createDropWhileOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "drop(while:)",
+            category: .filtering,
+            description: "Ignores elements from the upstream publisher until the provided predicate returns false, then publishes all remaining elements.",
+            codeExample: """
+            publisherA
+                .drop(while: { $0 < 40 })
+            """,
+            inputStrategies: [.dropWhileDemonstration()],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .drop(while: { value in
+                        if let intValue = value as? Int {
+                            return intValue < 40
+                        }
+                        return false
+                    })
                     .eraseToAnyPublisher()
             }
         )

@@ -108,4 +108,23 @@ extension InputGenerationStrategy {
             streamViewModel.addEvent(.completed)
         }
     }
+    static func dropWhileDemonstration() -> InputGenerationStrategy {
+        return .custom { streamViewModel in
+            streamViewModel.reset()
+            let timelineDuration = streamViewModel.timelineDuration
+            
+            let values = [10, 20, 30, 40, 50, 60, 40, 30, 20]
+            let count = values.count
+            let interval = (timelineDuration * 0.8) / Double(count)
+            
+            for (i, value) in values.enumerated() {
+                let time = Double(i) * interval + 0.5
+                streamViewModel.setCurrentTime(time)
+                streamViewModel.addEvent(.next(value))
+            }
+            
+            streamViewModel.setCurrentTime(timelineDuration * 0.9)
+            streamViewModel.addEvent(.completed)
+        }
+    }
 }
