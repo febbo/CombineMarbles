@@ -53,6 +53,7 @@ class OperatorLibrary {
             createZipOperator(),
             createFilterOperator(),
             createFilterWhereOperator(),
+            createRemoveDuplicatesOperator(),
             createPrefixOperator(),
             // TODO: Add new operators here
         ]
@@ -227,6 +228,52 @@ class OperatorLibrary {
                         // Filtra solo valori superiori a 50
                         if let intValue = value as? Int {
                             return intValue > 50
+                        }
+                        return false
+                    }
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+    
+    func createRemoveDuplicatesOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "removeDuplicates",
+            category: .filtering,
+            description: "Publishes only elements that don't match the previous element, using the provided predicate to determine the uniqueness.",
+            codeExample: """
+            publisherA
+                .removeDuplicates()
+            """,
+            inputStrategies: [.custom({ streamViewModel in
+                // Generiamo dati con valori duplicati consecutivi per dimostrare l'operatore
+                streamViewModel.reset()
+                let timelineDuration = streamViewModel.timelineDuration
+                
+                // Sequenza con duplicati
+                let values = [10, 10, 20, 30, 30, 30, 40, 50, 50]
+                let count = values.count
+                let interval = (timelineDuration * 0.8) / Double(count)
+                
+                for (i, value) in values.enumerated() {
+                    let time = Double(i) * interval + 0.5
+                    streamViewModel.setCurrentTime(time)
+                    streamViewModel.addEvent(.next(value))
+                }
+                
+                streamViewModel.setCurrentTime(timelineDuration * 0.9)
+                streamViewModel.addEvent(.completed)
+            })],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .removeDuplicates { prev, current in
+                        // Confronto di uguaglianza per rimuovere duplicati
+                        if let prevInt = prev as? Int, let currentInt = current as? Int {
+                            return prevInt == currentInt
                         }
                         return false
                     }
