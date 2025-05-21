@@ -56,6 +56,7 @@ class OperatorLibrary {
             createRemoveDuplicatesOperator(),
             createPrefixOperator(),
             createDropWhileOperator(),
+            createDropFirstOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -282,6 +283,7 @@ class OperatorLibrary {
             }
         )
     }
+    
     func createPrefixOperator() -> OperatorDefinition {
         return OperatorDefinition(
             name: "prefix(_:)",
@@ -303,6 +305,7 @@ class OperatorLibrary {
             }
         )
     }
+    
     //advanced filter
     func createFilterWhereOperator() -> OperatorDefinition {
         return OperatorDefinition(
@@ -373,4 +376,28 @@ class OperatorLibrary {
             }
         )
     }
+    
+    func createDropFirstOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "dropFirst(_:)",
+            category: .filtering,
+            description: "Ignores the first specified number of elements from the upstream publisher, then publishes all remaining elements.",
+            codeExample: """
+            publisherA
+                .dropFirst(3)
+            """,
+            inputStrategies: [.sequenceOperatorDemonstration()],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .dropFirst(3)
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+    
+}
 }
