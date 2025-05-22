@@ -400,4 +400,35 @@ class OperatorLibrary {
     }
     
 }
+// Error handling operators
+extension OperatorLibrary {
+    func createCatchOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "catch",
+            category: .error,
+            description: "Converts failures in the upstream publisher into a new publisher. This allows you to recover from errors by providing an alternative publisher when an error occurs.",
+            codeExample: """
+            publisherA
+                .catch { error in
+                    // Return a recovery publisher
+                    Just(99)
+                }
+            """,
+            inputStrategies: [.recoverableErrorDemonstration()],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .catch { _ in
+                        // Recovery publisher issuing a recovery value when an error occurs
+                        return Just(99)
+                            .setFailureType(to: Error.self)
+                            .eraseToAnyPublisher()
+                    }
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
 }

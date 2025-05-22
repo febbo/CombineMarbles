@@ -149,3 +149,26 @@ extension InputGenerationStrategy {
         }
     }
 }
+
+// extension for error handling generation
+extension InputGenerationStrategy {
+    static func recoverableErrorDemonstration() -> InputGenerationStrategy {
+        return .custom { streamViewModel in
+            streamViewModel.reset()
+            let timelineDuration = streamViewModel.timelineDuration
+            
+            let normalValues = [10, 20, 30]
+            let count = normalValues.count
+            let interval = (timelineDuration * 0.5) / Double(count)
+            
+            for (i, value) in normalValues.enumerated() {
+                let time = Double(i) * interval + 0.3
+                streamViewModel.setCurrentTime(time)
+                streamViewModel.addEvent(.next(value))
+            }
+            
+            streamViewModel.setCurrentTime(timelineDuration * 0.6)
+            streamViewModel.addEvent(.error(NSError(domain: "CombineMarbles", code: 404, userInfo: nil)))
+        }
+    }
+}
