@@ -57,6 +57,8 @@ class OperatorLibrary {
             createPrefixOperator(),
             createDropWhileOperator(),
             createDropFirstOperator(),
+            createCatchOperator(),
+            createRetryOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -428,6 +430,39 @@ extension OperatorLibrary {
                             .eraseToAnyPublisher()
                     }
                     .eraseToAnyPublisher()
+            }
+        )
+    }
+    func createRetryOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "retry",
+            category: .error,
+            description: "Attempts to recreate a failed subscription to the upstream publisher, up to the specified number of attempts. This gives the publisher multiple chances to establish a successful connection.",
+            codeExample: """
+            publisherA
+                .retry(2)
+            """,
+            inputStrategies: [.retryDemonstration()],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                // Simulates a retry - in this visualisation environment, we simulate the retry effect
+                let retryPublisher = publisher
+                
+                // Creation of a separate publisher simulating values after successful retry
+                let recoveryValues: [Any] = [30, 40, 50]
+                let recoveryPublisher = Publishers.Sequence(sequence: recoveryValues)
+                    .setFailureType(to: Error.self)
+                    .delay(for: .milliseconds(300), scheduler: RunLoop.main) // delay to simulate retry time
+                    .eraseToAnyPublisher()
+                
+                // Combines the original and the recovery to simulate a successful retry
+                return Publishers.Concatenate(
+                    prefix: retryPublisher,
+                    suffix: recoveryPublisher
+                ).eraseToAnyPublisher()
             }
         )
     }
