@@ -59,6 +59,7 @@ class OperatorLibrary {
             createDropFirstOperator(),
             createCatchOperator(),
             createRetryOperator(),
+            createAssertNoFailureOperator(),
             // TODO: Add new operators here
         ]
     }
@@ -402,6 +403,7 @@ class OperatorLibrary {
     }
     
 }
+
 // Error handling operators
 extension OperatorLibrary {
     func createCatchOperator() -> OperatorDefinition {
@@ -433,6 +435,7 @@ extension OperatorLibrary {
             }
         )
     }
+    
     func createRetryOperator() -> OperatorDefinition {
         return OperatorDefinition(
             name: "retry",
@@ -463,6 +466,34 @@ extension OperatorLibrary {
                     prefix: retryPublisher,
                     suffix: recoveryPublisher
                 ).eraseToAnyPublisher()
+            }
+        )
+    }
+    
+    func createAssertNoFailureOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "assertNoFailure",
+            category: .error,
+            description: "Raises a fatal error when it encounters a failure, but otherwise passes through values from its upstream publisher unchanged. Use this to ensure that failures don't occur in publisher chains where they're not expected.",
+            codeExample: """
+            publisherA
+                .assertNoFailure("This publisher should never fail!")
+            """,
+            inputStrategies: [.noErrorDemonstration()],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                // Questo operatore è principalmente dimostrativo, in un'applicazione reale
+                // farebbe crash in caso di errore. Qui passiamo semplicemente i valori.
+                return publisher
+                    .map { value in
+                        // If you really implemented assertNoFailure, the publisher would crash with an error
+                        // Here you can only simulate that everything is fine
+                        return value
+                    }
+                    .eraseToAnyPublisher()
             }
         )
     }

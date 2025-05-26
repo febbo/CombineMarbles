@@ -191,6 +191,7 @@ extension InputGenerationStrategy {
             streamViewModel.addEvent(.error(NSError(domain: "CombineMarbles", code: 500, userInfo: nil)))
         }
     }
+    
     static func recoverableErrorDemonstration() -> InputGenerationStrategy {
         return .custom { streamViewModel in
             streamViewModel.reset()
@@ -208,6 +209,26 @@ extension InputGenerationStrategy {
             
             streamViewModel.setCurrentTime(timelineDuration * 0.6)
             streamViewModel.addEvent(.error(NSError(domain: "CombineMarbles", code: 404, userInfo: nil)))
+        }
+    }
+    
+    static func noErrorDemonstration() -> InputGenerationStrategy {
+        return .custom { streamViewModel in
+            streamViewModel.reset()
+            let timelineDuration = streamViewModel.timelineDuration
+            
+            let normalValues = [10, 20, 30, 40, 50]
+            let count = normalValues.count
+            let interval = (timelineDuration * 0.7) / Double(count)
+            
+            for (i, value) in normalValues.enumerated() {
+                let time = Double(i) * interval + 0.2
+                streamViewModel.setCurrentTime(time)
+                streamViewModel.addEvent(.next(value))
+            }
+            
+            streamViewModel.setCurrentTime(timelineDuration * 0.8)
+            streamViewModel.addEvent(.completed)
         }
     }
 }
