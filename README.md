@@ -1,6 +1,38 @@
-# CombineMarbles
-An interactive tool to explore and understand the operators of the Combine framework in iOS. Inspired by RxMarbles, this app visually represents data streams transformed by Combine operators, helping developers and learners master reactive programming in Swift
+# CombineMarbles 🔵
 
+An educational iOS app for visualizing Combine operators through interactive marble diagrams, built with SwiftUI.
+
+## 📱 Overview
+
+CombineMarbles transforms the Combine learning process into a visual and interactive experience. Each operator is represented through animated marble diagrams that show how data flows through streams and gets transformed.
+
+## 🏗️ Architecture
+
+The app follows the **MVVM** pattern with clear separation of responsibilities:
+
+### 📁 Module Structure
+
+```
+CombineMarbles/
+├── 🎯 Core/
+│   ├── MarbleEvent.swift          # Base model for stream events
+│   ├── StreamEvent.swift          # Advanced event representation
+│   └── CombineOperator.swift      # Operator definitions + library
+├── 🎨 UI/
+│   ├── Views/
+│   │   ├── ContentView.swift      # Operators list
+│   │   ├── OperatorDetailView.swift # Operator detail
+│   │   ├── MarbleStreamView.swift  # Stream timeline
+│   │   └── MarbleView.swift       # Single marble
+│   └── ViewModels/
+│       ├── OperatorsViewModel.swift     # Operators list
+│       ├── OperatorDetailViewModel.swift # Detail logic
+│       └── MarbleStreamViewModel.swift  # Stream timeline
+├── 🔧 Utilities/
+│   └── InputGenerationStrategy.swift    # Data input strategies
+└── 📱 App/
+    └── CombineMarblesApp.swift
+```
 
 ## Configuration
 
