@@ -34,6 +34,31 @@ CombineMarbles/
     └── CombineMarblesApp.swift
 ```
 
+## ✨ Current Features
+
+### 🔀 Implemented Operators
+
+#### Transforming
+- ✅ `map` - Transforms elements with a closure
+- ✅ `compactMap` - Transforms and filters nil values
+
+#### Filtering  
+- ✅ `filter` - Filters elements with predicate
+- ✅ `filter(isMultipleOf:)` - Specialized filter
+- ✅ `removeDuplicates` - Removes consecutive duplicates
+- ✅ `prefix(_:)` - First N elements
+- ✅ `drop(while:)` - Ignores while condition is true
+- ✅ `dropFirst(_:)` - Ignores first N elements
+
+#### Combining
+- ✅ `merge` - Combines interleaved streams
+- ✅ `combineLatest` - Combines latest values
+- ✅ `zip` - Combines in synchronized pairs
+
+#### Error Handling
+- ✅ `catch` - Handles errors with substitute publisher
+- ✅ `retry` - Retries failed subscriptions
+- ✅ `assertNoFailure` - Ensures no errors occur
 ## Configuration
 
 1. Clone the repository
