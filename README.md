@@ -59,6 +59,37 @@ CombineMarbles/
 - ✅ `catch` - Handles errors with substitute publisher
 - ✅ `retry` - Retries failed subscriptions
 - ✅ `assertNoFailure` - Ensures no errors occur
+## 🛠️ Development Setup
+
+### Requirements
+- iOS 15.0+
+- Xcode 14.0+
+- Swift 5.7+
+
+### Installation
+```bash
+git clone https://github.com/yourusername/CombineMarbles.git
+cd CombineMarbles
+open CombineMarbles.xcodeproj
+```
+
+### Adding New Operators
+
+1. **Define the operator** in `OperatorLibrary`:
+```swift
+private func createYourOperator() -> OperatorDefinition {
+    return OperatorDefinition(
+        name: "yourOperator",
+        category: .transforming,
+        description: "Your operator description",
+        codeExample: "code example",
+        inputStrategies: [.random],
+        apply: { publishers in
+            // Implementation
+        }
+    )
+}
+```
 ## Configuration
 
 1. Clone the repository
