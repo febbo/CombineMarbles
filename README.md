@@ -90,6 +90,13 @@ private func createYourOperator() -> OperatorDefinition {
     )
 }
 ```
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-operator`)
+3. Commit changes (`git commit -am 'Add amazing operator'`)
+4. Push branch (`git push origin feature/amazing-operator`)
+5. Create Pull Request
 ## Configuration
 
 1. Clone the repository
