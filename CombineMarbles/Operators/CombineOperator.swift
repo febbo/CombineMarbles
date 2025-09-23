@@ -57,6 +57,7 @@ class OperatorLibrary {
             createPrefixOperator(),
             createDropWhileOperator(),
             createDropFirstOperator(),
+            createDebounceOperator(),
             createCatchOperator(),
             createRetryOperator(),
             createAssertNoFailureOperator(),
@@ -402,6 +403,51 @@ class OperatorLibrary {
         )
     }
     
+    // Timing operator: debounce
+    private func createDebounceOperator() -> OperatorDefinition {
+        return OperatorDefinition(
+            name: "debounce",
+            category: .timing,
+            description: "Publishes elements only after a specified time interval elapses without another element arriving from the upstream publisher. Useful to reduce bursts of rapid events.",
+            codeExample: """
+            publisherA
+                .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            """,
+            inputStrategies: [
+                .custom { streamViewModel in
+                    // Generate 2 bursts of closely spaced events separated by pauses
+                    streamViewModel.reset()
+                    let d = streamViewModel.timelineDuration
+                    
+                    func emitBurst(startFraction: Double, spacingFraction: Double, values: [Int]) {
+                        for (i, v) in values.enumerated() {
+                            let t = (startFraction + Double(i) * spacingFraction) * d
+                            streamViewModel.setCurrentTime(t)
+                            streamViewModel.addEvent(.next(v))
+                        }
+                    }
+                    
+                    // Each timeline unit (1.0) is equivalent to ~0.2s in real time in the simulation, so a spacing of 0.05*duration ~ 0.01*10 = 0.5 timeline seconds ~ 0.1s in real time, below the 300ms debounce.
+                    emitBurst(startFraction: 0.10, spacingFraction: 0.1, values: [10, 11, 12])
+                    emitBurst(startFraction: 0.50, spacingFraction: 0.1, values: [20, 21])
+
+                    
+                    streamViewModel.setCurrentTime(d * 0.95)
+                    streamViewModel.addEvent(.completed)
+                }
+            ],
+            apply: { publishers in
+                guard let publisher = publishers.first else {
+                    return Empty().eraseToAnyPublisher()
+                }
+                
+                return publisher
+                    .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+                    .eraseToAnyPublisher()
+            }
+        )
+    }
+    
 }
 
 // Error handling operators
@@ -498,3 +544,4 @@ extension OperatorLibrary {
         )
     }
 }
+
