@@ -14,10 +14,17 @@ class OperatorDetailViewModel: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
+    // Align the output to the same time scale as the simulation used in MarbleStreamViewModel.asPublisher()
+    // Note: keep these constants consistent with asPublisher (baseDelay: 0.05, span: 2.0s).
+    private let simulationBaseDelay: TimeInterval = 0.05
+    private let simulationSpan: TimeInterval = 2.0
+    private var subscriptionStartDate: Date?
+    
     func runExample(with operator: OperatorDefinition) {
         setupInputStreams(for: `operator`)
         outputStream.reset()
         cancellables.removeAll()
+        subscriptionStartDate = nil
         
         for (index, inputStream) in inputStreams.enumerated() {
             if index < `operator`.inputStrategies.count {
@@ -34,32 +41,52 @@ class OperatorDetailViewModel: ObservableObject {
             // Applies the operator to all input publishers
             let outputPublisher = `operator`.apply(inputPublishers)
             
+            // Store the subscription start time to map the output to the timeline
+            self.subscriptionStartDate = Date()
+            
             outputPublisher
                 .receive(on: RunLoop.main)
                 .sink(
                     receiveCompletion: { [weak self] completion in
                         guard let self = self else { return }
                         
+                        // Place the completion at the actual point in time of the simulation
+                        let elapsed = self.elapsedSinceStart()
+                        let position = self.timelinePosition(fromElapsed: elapsed)
+                        self.outputStream.setCurrentTime(position)
+                        
                         switch completion {
                         case .finished:
-                            self.outputStream.setCurrentTime(self.outputStream.timelineDuration * 0.9)
                             self.outputStream.addEvent(.completed)
                         case .failure(let error):
-                            self.outputStream.setCurrentTime(self.outputStream.timelineDuration * 0.9)
                             self.outputStream.addEvent(.error(error))
                         }
                     },
                     receiveValue: { [weak self] value in
                         guard let self = self else { return }
                         
-                        let currentOutputTime = self.outputStream.events.isEmpty ? 1.0 : (self.outputStream.currentTime + 1.5)
-                        self.outputStream.setCurrentTime(currentOutputTime)
-                        
+                        // Place each value according to its actual arrival time
+                        let elapsed = self.elapsedSinceStart()
+                        let position = self.timelinePosition(fromElapsed: elapsed)
+                        self.outputStream.setCurrentTime(position)
                         self.outputStream.addEvent(.next(value))
                     }
                 )
                 .store(in: &self.cancellables)
         }
+    }
+    
+    // Calculate the seconds elapsed since the start of the subscription
+    private func elapsedSinceStart() -> TimeInterval {
+        guard let start = subscriptionStartDate else { return 0 }
+        return Date().timeIntervalSince(start)
+    }
+    
+    // Map the seconds elapsed at the position in the timeline (0...timelineDuration) consistent with MarbleStreamViewModel.asPublisher(): delay = baseDelay + normalizedPosition * 2.0
+    private func timelinePosition(fromElapsed elapsed: TimeInterval) -> TimeInterval {
+        let adjusted = max(0, elapsed - simulationBaseDelay) // rimuove l'offset iniziale della simulazione
+        let normalized = max(0, min(1, adjusted / simulationSpan))
+        return normalized * outputStream.timelineDuration
     }
     
     // Method for configuring input streams based on the operator
@@ -78,3 +105,4 @@ class OperatorDetailViewModel: ObservableObject {
         }
     }
 }
+
