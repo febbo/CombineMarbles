@@ -17,6 +17,17 @@ enum OperatorCategory: String, CaseIterable {
     case error = "Error Handling"
 }
 
+// Color policy declaration for each operator's output marbles.
+// No SwiftUI dependencies here; the ViewModel will map these policies to concrete colors.
+enum OutputTintPolicy: Equatable {
+    // No special color handling: output retains default
+    case none
+    // Output inherits the tint of the input that emitted closest in time to the output.
+    case inheritNearestInput(epsilon: TimeInterval)
+    //The output represents a “composite” value derived from multiple inputs (e.g., zip, combineLatest).
+    case composed
+}
+
 struct OperatorDefinition: Identifiable {
     let id = UUID()
     let name: String
@@ -24,6 +35,7 @@ struct OperatorDefinition: Identifiable {
     let description: String
     let codeExample: String
     let inputStrategies: [InputGenerationStrategy]
+    let outputTintPolicy: OutputTintPolicy
     let apply: ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>
     
     init(name: String,
@@ -31,12 +43,14 @@ struct OperatorDefinition: Identifiable {
          description: String,
          codeExample: String,
          inputStrategies: [InputGenerationStrategy] = [.random],
+         outputTintPolicy: OutputTintPolicy = .none,
          apply: @escaping ([AnyPublisher<Any, Error>]) -> AnyPublisher<Any, Error>) {
         self.name = name
         self.category = category
         self.description = description
         self.codeExample = codeExample
         self.inputStrategies = inputStrategies
+        self.outputTintPolicy = outputTintPolicy
         self.apply = apply
     }
 }
@@ -135,6 +149,7 @@ class OperatorLibrary {
                 .merge(with: publisherB)
             """,
             inputStrategies: [.random, .delayed],
+            outputTintPolicy: .inheritNearestInput(epsilon: 0.25),
             apply: { publishers in
                 guard publishers.count >= 2 else {
                     return publishers.first ?? Empty().eraseToAnyPublisher()
@@ -162,6 +177,7 @@ class OperatorLibrary {
                 }
             """,
             inputStrategies: [.random, .delayed],
+            outputTintPolicy: .composed,
             apply: { publishers in
                 guard publishers.count >= 2 else {
                     return publishers.first ?? Empty().eraseToAnyPublisher()
@@ -194,6 +210,7 @@ class OperatorLibrary {
                 }
             """,
             inputStrategies: [.random, .delayed],
+            outputTintPolicy: .composed,
             apply: { publishers in
                 guard publishers.count >= 2 else {
                     return publishers.first ?? Empty().eraseToAnyPublisher()
@@ -431,7 +448,6 @@ class OperatorLibrary {
                     emitBurst(startFraction: 0.10, spacingFraction: 0.1, values: [10, 11, 12])
                     emitBurst(startFraction: 0.50, spacingFraction: 0.1, values: [20, 21])
 
-                    
                     streamViewModel.setCurrentTime(d * 0.95)
                     streamViewModel.addEvent(.completed)
                 }

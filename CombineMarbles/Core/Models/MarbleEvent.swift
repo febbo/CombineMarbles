@@ -18,8 +18,12 @@ struct MarbleEvent: Identifiable {
     let id = UUID()
     let position: TimeInterval // Posizione temporale fittizia (da 0 a timelineDuration)
     let type: MarbleEventType
+    let tint: Color?
     
     var color: Color {
+        if let tint {
+            return tint
+        }
         switch type {
         case .next: return .blue
         case .error: return .red

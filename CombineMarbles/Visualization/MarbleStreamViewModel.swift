@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import SwiftUI
 
 class MarbleStreamViewModel: ObservableObject {
     let title: String
@@ -18,6 +19,9 @@ class MarbleStreamViewModel: ObservableObject {
     // Impostazioni di visualizzazione
     let timelineDuration: TimeInterval = 10.0 // 10 secondi totali nella timeline
     let timelineWidth: CGFloat = 300 // Larghezza fisica della timeline in punti
+    
+    // Default color for .next events in this stream (useful for distinguishing input streams)
+    var defaultTint: Color? = nil
     
     @Published var events: [MarbleEvent] = []
     
@@ -35,9 +39,17 @@ class MarbleStreamViewModel: ObservableObject {
         currentTime = min(max(0, newTime), timelineDuration) // Limita tra 0 e timelineDuration
     }
     
-    func addEvent(_ type: MarbleEventType) {
-        // Crea un evento con timestamp fittizio
-        let event = MarbleEvent(position: currentTime, type: type)
+    // Allows you to add an event, optionally specifying a tint (used for .next).
+    func addEvent(_ type: MarbleEventType, tint: Color? = nil) {
+        let eventTint: Color?
+        switch type {
+        case .next:
+            eventTint = tint ?? defaultTint
+        case .error, .completed:
+            eventTint = nil
+        }
+        
+        let event = MarbleEvent(position: currentTime, type: type, tint: eventTint)
         DispatchQueue.main.async {
             self.events.append(event)
         }
